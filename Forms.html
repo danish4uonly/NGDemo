@@ -1,0 +1,561 @@
+
+<head>
+<meta charset="utf-8">
+  
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="JS/jquery-latest.min.js?x56871"></script>
+<script type="text/javascript" src="JS/multipicker.min.js"></script>
+<link rel="stylesheet" href="JS/multipicker.min.css">
+<link href="https://canvasjs.com/assets/css/jquery-ui.1.11.2.min.css" rel="stylesheet" />
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+
+<script >
+$.noConflict();
+function showTab(n) {
+  // This function will display the specified tab of the form ...
+  var x = document.getElementsByClassName("tab");
+  x[n].style.display = "block";
+  // ... and fix the Previous/Next buttons:
+  
+   
+  // ... and run a function that displays the correct step indicator:
+  fixStepIndicator(n)
+}
+function fixStepIndicator(n) {
+  // This function removes the "active" class of all steps...
+  var x = document.getElementsByClassName("tab")
+  for (i = 0; i < x.length; i++) {
+     x[i].style.display = "none";
+  }
+  //... and adds the "active" class to the current step:
+  x[n].style.display = "block";
+  currentTab = n;
+}
+
+
+
+var current_fs, next_fs, previous_fs; //fieldsets
+var left, opacity, scale; //fieldset properties which we will animate
+var animating; //flag to prevent quick multi-click glitches
+var currentTab = 0; // Current tab is set to be the first tab (0)
+var selectedValues=[];
+var selected="";
+var obj=[];
+
+var Gender="Male";
+function selectGender(e){
+var value=jQuery(e).attr("value");
+		gender=value;
+		
+}
+
+var age="";
+function getAge(e){
+var value=jQuery(e).val();
+		age=value;
+		
+}
+var certReq="";
+function getcertOption(e){
+var value=jQuery(e).attr("value");
+		certReq=value;
+		
+}
+jQuery(document).ready(function(){
+//jQuery time
+
+
+showTab(currentTab); // Display the current tab
+function validateForm() {
+  // This function deals with validation of the form fields
+  var x, y, i, valid = true;
+  if(currentTab==0){
+	if(obj!=undefined  && obj.length==0){
+		valid=false;
+  }
+  }else{
+  x = document.getElementsByClassName("tab");
+  y = x[currentTab].getElementsByTagName("input");
+  // A loop that checks every input field in the current tab:
+  for (i = 0; i < y.length; i++) {
+    // If a field is empty...
+    if (y[i].value == "") {
+      // add an "invalid" class to the field:
+      y[i].className += " invalid";
+      // and set the current valid status to false:
+      valid = false;
+    }
+  }
+  }
+  return valid;
+  }
+  
+
+
+
+$(".next").click(function(){
+	
+	if(validateForm()){
+	
+	var x =jQuery(".tab");
+	current_fs = x[currentTab];
+	
+	//show the next fieldset
+	//hide the current fieldset with style
+	current_fs.animate({opacity: 0}, {
+		step: function(now, mx) {
+			//as the opacity of current_fs reduces to 0 - stored in "now"
+			//1. scale current_fs down to 80%
+			scale = 1 - (1 - now) * 0.2;
+			//2. bring next_fs from the right(50%)
+			left = (now * 80)+"%";
+			//3. increase opacity of next_fs to 1 as it moves in
+			opacity = 1 - now;
+			current_fs.css({
+        'transform': 'scale('+scale+')',
+        'position': 'absolute',
+		'display':'none'
+      });
+			//next_fs.css({'left': left, 'opacity': opacity});
+		}, 
+		duration: 800, 
+		complete: function(){
+			current_fs.hide();
+			animating = false;
+		}, 
+		
+	});
+	if((currentTab+1)<x.length){
+		showTab(currentTab+1);
+		}else{
+		next_fs = x[currentTab];
+	}
+	}
+	jQuery("#symptomsText").text(obj);
+});
+
+jQuery(document).ready(function(){
+  jQuery("#editModal").click(function(){
+    //jQuery("#myModal").modal();
+  });
+});
+jQuery(".submit").click(function(){
+    return false;
+});
+
+jQuery(".one ul, .two ul ,.three ul, .four ul, .five ul, .six ul ,.seven ul, .eight ul,.nine ul,.ten ul").on('click',function(){
+  var element=jQuery(this);
+  var childel=element.children();
+  var color=childel.css("background");
+  var color1=childel.css("background");
+  if(childel.css("background") == "rgb(255, 223, 204) none repeat scroll 0% 0% / auto padding-box border-box"){
+	element.children().css("background","white");
+	var value=element.parent().attr("name");
+	var idx=obj.indexOf(value);
+	var remov;
+	if(idx!=-1){
+		
+		remov=obj.split(",").filter(function(v){
+			if(v==value){
+				return;
+			}else{
+				return v;
+			}
+		
+		});
+		selected=remov.join(",");
+		obj=remov.join(",");
+	}
+	
+  }else{
+  
+  element.children().css("background","#ffdfcc");
+  var value=element.parent().attr("name");
+	
+	if(selected==""){
+	selected+=value;
+	obj=selected;
+	}else{
+	var idx=obj.indexOf(value);
+	var remov;
+	if(idx!=-1){
+		var copy=selected;
+		remov=obj.split(",").filter(function(v){
+			if(v==value){
+				return;
+			}else{
+				return v;
+			}
+		
+		});
+		selected=remov.join(",");
+		obj=remov.join(",");
+		if(obj==undefined||obj==""){
+		obj=copy;
+		}
+	}else{
+		selected=selected+','+value;
+		obj=selected;}
+	}
+	
+	}
+  });
+});
+function getData(){
+	
+   
+        
+    
+    var reqObject=new Object();
+	var ag=parseInt(age);
+	if(ag<16){
+		reqObject.Age="Child";
+		}else if(ag>16 && ag<60){
+			reqObject.Age="Adult";
+		}else{
+			reqObject.Age="OlderAdult";
+		}
+	if(obj!=undefined && obj.length>0){
+		var selectOpt=obj.split(',');
+		selectOpt.filter(function(v){
+				if(v=="Runny Nose"){
+				reqObject.Runny_Nose_1="recorded";
+				}
+				if(v=="Irritability"){
+				reqObject.Irritable="recorded";
+				}
+				if(v=="Cough"){
+				reqObject.Cough="recorded";
+				}else{
+					reqObject.Cough="recorded";
+				}
+				
+				return false;
+		
+		});
+	}
+	axios.interceptors.request.use(function(config) {
+	jQuery("#tab").css("display","none");
+  jQuery("#root").addClass("loader"); 
+  console.log('Start Ajax Call');
+  return config;
+}, function(error) {
+	jQuery("#tab").css("display","none");
+  jQuery("#root").addClass("loader"); 
+  console.log('Error');
+  return Promise.reject(error);
+});
+
+axios.interceptors.response.use(function(response) {
+  jQuery("#root").removeClass("loader"); 
+  console.log('Done with Ajax call');
+
+  return response;
+}, function(error) {
+  jQuery("#root").removeClass("loader"); 
+  console.log('Error fetching the data');
+  return Promise.reject(error);
+});
+	const API_URL ='http://amr-poc-api.bayesian-intelligence.com:80/postbnevidenceforpathogen';
+	const REQUEST_HEADERS = {'Access-Control-Allow-Origin': '*','Content-Type': 'application/json',};
+	const proxyurl = "https://cors-anywhere.herokuapp.com/";
+	let data={};
+	// Making a POST request using an axios instance from a connected library
+	axios.post(proxyurl+API_URL, reqObject, { headers: REQUEST_HEADERS })
+  // Handle a successful response from the server
+  .then(response => {
+          // Getting a data object from response that contains the necessary data from the server
+          data = response.data;
+          console.log('data', data);
+			var options1=new Object();
+	options1.animationEnabled= true;
+	options1.title={text: "Pathogen Information"};
+	var data1=[];
+	var points=[];
+	var keys=Object.keys(data);
+	keys.forEach(function(v){
+	
+		var obj2=new Object();
+		obj2.label=v;
+		obj2["y"]=data[v];
+		points.push(obj2);
+	});
+	var Obj3=new Object();
+	Obj3.type= "column";
+	Obj3.showInLegend= true;
+	Obj3.dataPoints=points;
+	data1.push(Obj3);
+	options1.data=data1;
+	options1.axisY= {
+		scaleBreaks: {
+			autoCalculate: true //change it to false
+		}
+	};
+	console.log(options1);
+	
+		jQuery("#chartContainer1").CanvasJSChart(options1);
+	jQuery("#StatedText").text(obj);
+	jQuery("#DemographicsText").html("<b>Age</b>: "+age+"<br/><b>Gender</b>: "+Gender);
+	//jQuery("#de").text(obj);
+          // Save the unique id that the server gives to our object
+         // STUDENT_ID = data._id;
+  })
+  // Catch and print errors if any
+  .catch(error => console.log('On create student error', error));
+  const URL ='http://amr-poc-api.bayesian-intelligence.com:80/postbnevidenceforlocations';
+	var show=false;
+	let data6={};
+	// Making a POST request using an axios instance from a connected library
+	axios.post(proxyurl+URL, reqObject, { headers: REQUEST_HEADERS })
+  // Handle a successful response from the server
+  .then(response => {
+          // Getting a data object from response that contains the necessary data from the server
+          data6 = response.data;
+          console.log('data', data6);
+			var options1=new Object();
+	options1.animationEnabled= true;
+	options1.title={text: "Infection By Location"};
+	var data1=[];
+	var points=[];
+	var keys=Object.keys(data6);
+	keys.forEach(function(v){
+	
+		var obj2=new Object();
+		obj2.label=v;
+		obj2["y"]=data6[v];
+		points.push(obj2);
+	});
+	var Obj3=new Object();
+	Obj3.type= "column";
+	Obj3.showInLegend= true;
+	Obj3.dataPoints=points;
+	data1.push(Obj3);
+	options1.data=data1;
+	options1.axisY= {
+		scaleBreaks: {
+			autoCalculate: true //change it to false
+		}
+	};
+	console.log(options1);
+	show=true;
+	
+		jQuery("#chartContainer2").CanvasJSChart(options1);
+	showTab(3);
+	
+	fixStepIndicator(3);
+	
+})
+  // Catch and print errors if any
+  .catch(error => console.log('On create student error', error));
+	
+	
+}
+
+</script>
+<link rel="stylesheet" href="style.css">
+<!-- multistep form -->
+<div class="container" id="root">
+<form id="msform">
+  
+  <!-- fieldsets -->
+  <div class="container card" style="overflow:auto;">
+  <div class="tab" >
+    <h2 > Select Symptoms</h3>
+	
+	<div class="row">
+	<div name="Runny Nose" class="card col-sm-4 extra  One"><ul class="list-group list-group-flush cardToSelect">
+    <li class="list-group-item">Runny Nose</li></ul></div>
+	<div name="Irritability" class="card col-sm-4 extra two"><ul class="list-group list-group-flush cardToSelect ">
+    <li class="list-group-item">Irritability</li></ul></div>
+	<div name="Other Symptoms" class="card col-sm-4 extra three"><ul class="list-group list-group-flush cardToSelect">
+    <li class="list-group-item">Other Symptoms</li></ul></div>
+	<div name="Cough" class="card col-sm-4 extra four"><ul class="list-group list-group-flush cardToSelect">
+    <li class="list-group-item">Cough</li></ul></div>
+	<div name="Temperature" class="card col-sm-4 extra five"><ul class="list-group list-group-flush cardToSelect">
+    <li class="list-group-item">Temperature</li></ul></div>
+	<div name="No Symptoms" class="card col-sm-4 extra six"><ul class="list-group list-group-flush cardToSelect">
+    <li class="list-group-item">No Symptoms</li></ul></div>
+	<div name="Diarrhoea" class="card col-sm-4 extra seven"><ul class="list-group list-group-flush ">
+    <li class="list-group-item">Diarrhoea</li></ul></div>
+	<div name="Rash" class="card col-sm-4 extra eight"><ul class="list-group list-group-flush ">
+    <li class="list-group-item">Rash</li></ul></div>
+	<div name="Headache" class="card col-sm-4 extra nine"><ul class="list-group list-group-flush">
+    <li class="list-group-item">Headache</li></ul></div>
+	<div name="Neck Stiffness" class="card col-sm-4 extra ten"><ul class="list-group list-group-flush ">
+    <li class="list-group-item">Neck Stiffness</li></ul></div>
+	</div>
+	<div class="align-self-center mx-auto">
+    <input type="button" name="next" class="next action-button" value="Next" />
+	</div>
+	</div>
+  </div>
+  <div class="tab">
+    <div class="col-sm-7" style="background:#e0ecec;height:50%;">
+	<h2>Basic Details</h2>
+	<p>These Questions are about patients that may be you or someone else.</p>
+	<h3 style="font-size:19px">Patient's Gender:</h3>
+	<div class="container">
+	<div class="col-sm-7" >
+	<div class="col-sm-2">
+	<label id ="butonRadio" value="Male" onclick="selectGender(this)">
+	<input class="butonRadio" type="radio" name="test" value="male" >
+	<img class="butonRadio" src="images/male-avatar.png" style="width:50%;">
+	</label>
+	</div>
+	<div class="col-sm-2">
+	<label id ="butonRadio" value="Female" onclick="selectGender(this)">
+	<input class="butonRadio" type="radio" name="test" value="female"/>
+	<img class="butonRadio" src="images/female-avatar.png" style="width:50%;">
+	</label>
+	</div>
+	</div>
+	</div>
+	<h3 style="font-size:19px">Patient's Age:</h3>
+	<input id="age" type="number" name="gplus"  style="width:60%" min="1" max="3" onfocusout="getAge(this)"/>
+	</div>
+	
+	<div class="col-sm-5" style="background: antiquewhite;height:50%;overflow:auto;">
+	<h2>Your Answers So Far</h2>
+		<div class="card whole container" style="width:100%;overflow-wrap: break-word;">
+  <div class="card-header">
+    <h3 style="font-size: 20px;">Symptom Area:</h2>
+  </div>
+  <div class="card-body">
+    <p class="card-text" id="symptomsText"></p>
+
+    <a id="editModal" data-toggle="modal" href="#myModal" class="btn btn-primary" style="float:right;">Edit</a>
+  </div>
+</div>
+	</div>
+    <div class="align-self-center mx-auto" >
+   <center> <input type="button" name="next" class="next action-button" value="Next" /></center>
+   </div>
+	
+  </div>
+  <div class="tab" id="tab">
+	<div class="container">
+	<div class="row">
+		<h3>Do you need Medical Certificate</h3>
+			<div class="row">
+			<div class="radio">
+			<label><input class="cert "type="radio" name="optradio" value="yes" onclick="getcertOption(this);">YES</label>
+			</div>
+			<div class="radio">
+			<label><input class="cert" type="radio" name="optradio" value="No" onclick="getcertOption(this);">NO</label>
+			</div>
+		</div >
+	</div>
+	
+	</div>
+    <div class="align-self-center mx-auto">
+    <input type="submit" name="submit" class="submit action-button" value="Submit" onclick="getData();" />
+	</div>
+	
+  </div>
+  <div class="tab container" style="80%">
+			
+		
+		
+		
+		<!--patient Info here-->
+		<div class="container graph col-sm-5" >
+			
+			<div class="row data" style="padding: 17px; background:#e4d0e3;">
+			<div class="card whole container" style="width:100%;overflow-wrap: break-word;">
+  <div class="card-header">
+    <h3 style="font-size: 20px;">Demographics</h2>
+  </div>
+  <div class="card-body">
+    <p class="card-text" id="DemographicsText"></p>
+
+    
+  </div>
+</div>
+			</div>
+			<div class="row data" style="padding: 17px;">
+			<div class="card whole container" style="width:100%;overflow-wrap: break-word;">
+  <div class="card-header">
+    <h3 style="font-size: 20px;">Symptoms Stated:</h2>
+  </div>
+  <div class="card-body">
+    <p class="card-text" id="StatedText"></p>
+
+    
+  </div>
+</div>
+			</div>
+		</div>
+		<div class="container graph col-sm-7" >
+			<div class="row data" >
+				
+				<div id="chartContainer1" ></div>
+				
+			</div>
+			<div class="row data" >
+			<div id="chartContainer2" ></div>
+			</div>
+		</div>
+		
+		
+  </div>
+  <!-- Modal -->
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header" ">
+		<button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h2></span> Reselect Your Symptoms</h2>
+        </div>
+		<div class="modal-body container col-sm-12" >
+          
+			
+			<h2 ></h3>
+
+			<div class="row col-sm-12">
+			<div name="Runny Nose" class="card col-sm-3 extra  One"><ul class="list-group list-group-flush cardToSelect">
+			<li class="list-group-item">Runny Nose</li></ul></div>
+			<div name="Irritability" class="card col-sm-3 extra two"><ul class="list-group list-group-flush cardToSelect ">
+			<li class="list-group-item">Irritability</li></ul></div>
+			<div name="Other Symptoms" class="card col-sm-3 extra three"><ul class="list-group list-group-flush cardToSelect">
+			<li class="list-group-item">Other Symptoms</li></ul></div>
+			<div name="Cough" class="card col-sm-3 extra four"><ul class="list-group list-group-flush cardToSelect">
+			<li class="list-group-item">Cough</li></ul></div>
+			<div name="Temperature" class="card col-sm-3 extra five"><ul class="list-group list-group-flush cardToSelect">
+			<li class="list-group-item">Temperature</li></ul></div>
+			<div name="No Symptoms" class="card col-sm-3 extra six"><ul class="list-group list-group-flush cardToSelect">
+			<li class="list-group-item">No Symptoms</li></ul></div>
+			<div name="Diarrhoea" class="card col-sm-3 extra seven"><ul class="list-group list-group-flush ">
+			<li class="list-group-item">Diarrhoea</li></ul></div>
+			<div name="Rash" class="card col-sm-3 extra eight"><ul class="list-group list-group-flush ">
+			<li class="list-group-item">Rash</li></ul></div>
+			<div name="Headache" class="card col-sm-3 extra nine"><ul class="list-group list-group-flush">
+			<li class="list-group-item">Headache</li></ul></div>
+			<div name="Neck Stiffness" class="card col-sm-3 extra ten"><ul class="list-group list-group-flush ">
+			<li class="list-group-item">Neck Stiffness</li></ul></div>
+			</div>
+			
+	
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="next btn btn-danger btn-default pull-left" data-dismiss="modal"><span ></span> Done</button>
+          
+        </div>
+      </div>
+      
+    </div>
+  </div> 
+</div>
+ <div>
+</div>
+</form>
+ </div>
+ <script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
+<script src="https://canvasjs.com/assets/script/jquery-ui.1.11.2.min.js"></script>
+<script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
+</body>
